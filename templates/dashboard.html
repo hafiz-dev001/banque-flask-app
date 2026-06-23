@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BANQUE NATIONALE - Tableau de bord</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-logo">
+                <h1>🏦 BANQUE NATIONALE</h1>
+            </div>
+            <div class="navbar-menu">
+                <a id="link-home" href="/" class="btn btn-secondary">Accueil</a>
+                <span id="username-display"></span>
+                <a id="link-logout" href="/logout" class="btn btn-danger">Déconnexion</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="dashboard">
+            <!-- Section Profil -->
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card">
+                        <h3>Mes informations</h3>
+                        <div class="profile-info">
+                            <p><strong>Nom:</strong> <span id="full_name">-</span></p>
+                            <p><strong>Email:</strong> <span id="email">-</span></p>
+                            <p><strong>IBAN:</strong> <span id="account_number">-</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section Solde -->
+                <div class="col-md-4">
+                    <div class="card balance-card">
+                        <h3>Solde du compte</h3>
+                        <div class="balance-display">
+                            <span id="balance" class="balance-amount">0.00 €</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section Actions Rapides -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <h3>Actions rapides</h3>
+                        <button class="btn btn-primary btn-block" onclick="openDepositModal()">Dépôt</button>
+                        <button class="btn btn-secondary btn-block" onclick="openTransferModal()">Virement</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section Transactions -->
+            <div class="row" style="margin-top: 30px;">
+                <div class="col-md-12">
+                    <div class="card">
+                        <h3>Historique des transactions</h3>
+                        <div class="transactions-list">
+                            <table class="transactions-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                        <th>Montant</th>
+                                        <th>Solde</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transactions-tbody">
+                                    <tr>
+                                        <td colspan="5" class="text-center">Chargement...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Dépôt -->
+    <div id="depositModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeDepositModal()">&times;</span>
+            <h2>Effectuer un dépôt</h2>
+            <form id="depositForm">
+                <div class="form-group">
+                    <label for="deposit_amount">Montant (€):</label>
+                    <input type="number" id="deposit_amount" min="0.01" step="0.01" required>
+                </div>
+                <div id="deposit-error" class="error" style="display: none;"></div>
+                <div id="deposit-success" class="success" style="display: none;"></div>
+                <button type="submit" class="btn btn-primary">Effectuer le dépôt</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal Virement -->
+    <div id="transferModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeTransferModal()">&times;</span>
+            <h2>Effectuer un virement</h2>
+            <form id="transferForm">
+                <div class="form-group">
+                    <label for="recipient_account">IBAN du destinataire:</label>
+                    <input type="text" id="recipient_account" placeholder="ex: FR7612345678901234567890" required>
+                </div>
+                <div class="form-group">
+                    <label for="transfer_amount">Montant (€):</label>
+                    <input type="number" id="transfer_amount" min="0.01" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="transfer_description">Description:</label>
+                    <input type="text" id="transfer_description" placeholder="Motif du virement">
+                </div>
+                <div id="transfer-error" class="error" style="display: none;"></div>
+                <div id="transfer-success" class="success" style="display: none;"></div>
+                <button type="submit" class="btn btn-primary">Envoyer le virement</button>
+            </form>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        if (window.location.protocol === 'file:') {
+            document.getElementById('link-home').href = 'index.html';
+            document.getElementById('link-logout').href = 'login.html';
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProfile();
+            loadTransactions();
+            setupFormHandlers();
+        });
+        
+        function setupFormHandlers() {
+            document.getElementById('depositForm').addEventListener('submit', handleDeposit);
+            document.getElementById('transferForm').addEventListener('submit', handleTransfer);
+        }
+        
+        async function loadProfile() {
+            try {
+                const response = await fetch('/api/user/profile');
+                const user = await response.json();
+                
+                document.getElementById('username-display').textContent = user.username;
+                document.getElementById('full_name').textContent = user.full_name;
+                document.getElementById('email').textContent = user.email;
+                document.getElementById('account_number').textContent = user.account_number;
+                document.getElementById('balance').textContent = user.balance.toFixed(2) + ' €';
+            } catch (error) {
+                console.error('Erreur lors du chargement du profil:', error);
+            }
+        }
+        
+        async function loadTransactions() {
+            try {
+                const response = await fetch('/api/transactions');
+                const transactions = await response.json();
+                
+                const tbody = document.getElementById('transactions-tbody');
+                tbody.innerHTML = '';
+                
+                if (transactions.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center">Aucune transaction</td></tr>';
+                    return;
+                }
+                
+                transactions.forEach(tx => {
+                    const row = document.createElement('tr');
+                    const date = new Date(tx.timestamp).toLocaleDateString('fr-FR');
+                    const amount = tx.type.includes('sortant') ? '-' + tx.amount : '+' + tx.amount;
+                    const amountClass = tx.type.includes('sortant') ? 'text-danger' : 'text-success';
+                    
+                    row.innerHTML = `
+                        <td>${date}</td>
+                        <td>${tx.type}</td>
+                        <td>${tx.description || '-'}</td>
+                        <td class="${amountClass}">${amount} €</td>
+                        <td>${tx.balance_after.toFixed(2)} €</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Erreur lors du chargement des transactions:', error);
+            }
+        }
+        
+        async function handleDeposit(e) {
+            e.preventDefault();
+            
+            const amount = parseFloat(document.getElementById('deposit_amount').value);
+            const errorDiv = document.getElementById('deposit-error');
+            const successDiv = document.getElementById('deposit-success');
+            
+            try {
+                const response = await fetch('/api/deposit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ amount })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    successDiv.textContent = data.message;
+                    successDiv.style.display = 'block';
+                    errorDiv.style.display = 'none';
+                    
+                    setTimeout(() => {
+                        closeDepositModal();
+                        loadProfile();
+                        loadTransactions();
+                    }, 2000);
+                } else {
+                    errorDiv.textContent = data.error;
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Erreur réseau';
+                errorDiv.style.display = 'block';
+            }
+        }
+        
+        async function handleTransfer(e) {
+            e.preventDefault();
+            
+            const recipient_account = document.getElementById('recipient_account').value;
+            const amount = parseFloat(document.getElementById('transfer_amount').value);
+            const description = document.getElementById('transfer_description').value;
+            const errorDiv = document.getElementById('transfer-error');
+            const successDiv = document.getElementById('transfer-success');
+            
+            try {
+                const response = await fetch('/api/transfer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ recipient_account, amount, description })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    successDiv.textContent = data.message;
+                    successDiv.style.display = 'block';
+                    errorDiv.style.display = 'none';
+                    
+                    setTimeout(() => {
+                        closeTransferModal();
+                        loadProfile();
+                        loadTransactions();
+                    }, 2000);
+                } else {
+                    errorDiv.textContent = data.error;
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Erreur réseau';
+                errorDiv.style.display = 'block';
+            }
+        }
+        
+        function openDepositModal() {
+            document.getElementById('depositModal').style.display = 'block';
+        }
+        
+        function closeDepositModal() {
+            document.getElementById('depositModal').style.display = 'none';
+            document.getElementById('depositForm').reset();
+        }
+        
+        function openTransferModal() {
+            document.getElementById('transferModal').style.display = 'block';
+        }
+        
+        function closeTransferModal() {
+            document.getElementById('transferModal').style.display = 'none';
+            document.getElementById('transferForm').reset();
+        }
+        
+        window.onclick = function(event) {
+            const depositModal = document.getElementById('depositModal');
+            const transferModal = document.getElementById('transferModal');
+            
+            if (event.target == depositModal) {
+                closeDepositModal();
+            }
+            if (event.target == transferModal) {
+                closeTransferModal();
+            }
+        }
+    </script>
+</body>
+</html>

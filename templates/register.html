@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BANQUE NATIONALE - Créer un compte</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-logo"><h1>BANQUE NATIONALE</h1></div>
+            <div class="navbar-menu">
+                <a id="link-home" href="/">Accueil</a>
+                <a id="link-login" href="/login">Connexion</a>
+                <a id="link-register" href="/register">Créer un compte</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="login-container">
+            <div class="logo">
+                <h1>🏦 BANQUE NATIONALE</h1>
+            </div>
+            
+            <div class="card">
+                <h2>Créer un compte</h2>
+                
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="full_name">Nom complet:</label>
+                        <input type="text" id="full_name" name="full_name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="username">Nom d'utilisateur:</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Mot de passe:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password_confirm">Confirmer le mot de passe:</label>
+                        <input type="password" id="password_confirm" name="password_confirm" required>
+                    </div>
+                    
+                    <div id="error-message" class="error" style="display: none;"></div>
+                    <div id="success-message" class="success" style="display: none;"></div>
+                    
+                    <button type="submit" class="btn btn-primary">Créer mon compte</button>
+                </form>
+                
+                <p class="text-center">Déjà inscrit? <a id="link-login" href="/login">Se connecter</a></p>
+                <p class="text-center"><a id="link-home" href="/">Retour à l'accueil</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        if (window.location.protocol === 'file:') {
+            document.getElementById('link-login').href = 'login.html';
+            document.getElementById('link-home').href = 'index.html';
+            document.getElementById('link-register').href = 'register.html';
+        }
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const full_name = document.getElementById('full_name').value;
+            const email = document.getElementById('email').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const password_confirm = document.getElementById('password_confirm').value;
+            
+            const errorDiv = document.getElementById('error-message');
+            const successDiv = document.getElementById('success-message');
+            
+            if (password !== password_confirm) {
+                errorDiv.textContent = 'Les mots de passe ne correspondent pas';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ full_name, email, username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    successDiv.textContent = data.message;
+                    successDiv.style.display = 'block';
+                    errorDiv.style.display = 'none';
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                } else {
+                    errorDiv.textContent = data.error || 'Erreur lors de la création du compte';
+                    errorDiv.style.display = 'block';
+                    successDiv.style.display = 'none';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Erreur réseau';
+                errorDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

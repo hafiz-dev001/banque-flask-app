@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BANQUE NATIONALE - Connexion</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-logo"><h1>BANQUE NATIONALE</h1></div>
+            <div class="navbar-menu">
+                <a id="link-home" href="/">Accueil</a>
+                <a id="link-register" href="/register">Créer un compte</a>
+                <a id="link-login" href="/login">Connexion</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="login-container">
+            <div class="logo">
+                <h1>🏦 BANQUE NATIONALE</h1>
+            </div>
+            
+            <div class="card">
+                <h2>Connexion</h2>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">Nom d'utilisateur:</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Mot de passe:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    
+                    <div id="error-message" class="error" style="display: none;"></div>
+                    
+                    <button type="submit" class="btn btn-primary">Connexion</button>
+                </form>
+                
+                <p class="text-center">Pas de compte? <a href="#" onclick="showRegister(event)">Créer un compte</a></p>
+                <p class="text-center"><a id="link-home" href="/">Retour à l'accueil</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        if (window.location.protocol === 'file:') {
+            document.getElementById('link-home').href = 'index.html';
+            document.getElementById('link-register').href = 'register.html';
+            document.getElementById('link-login').href = 'login.html';
+        }
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('error-message');
+            
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    window.location.href = '/dashboard';
+                } else {
+                    errorDiv.textContent = data.error || 'Erreur de connexion';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Erreur réseau';
+                errorDiv.style.display = 'block';
+            }
+        });
+        
+        function showRegister(e) {
+            e.preventDefault();
+            if (window.location.protocol === 'file:') {
+                window.location.href = 'register.html';
+            } else {
+                window.location.href = '/register';
+            }
+        }
+    </script>
+</body>
+</html>

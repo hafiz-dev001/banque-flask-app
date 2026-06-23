@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BANQUE NATIONALE - La banque de demain</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="../static/css/style.css">
+    <style>
+        .hero {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 100px 20px;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .hero p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 60px 20px;
+        }
+        
+        .feature-card {
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+        
+        .feature-card h3 {
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+        }
+        
+        .feature-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-logo"><h1>BANQUE NATIONALE</h1></div>
+            <div class="navbar-menu">
+                <a id="link-home" href="/">Accueil</a>
+                <a id="link-dashboard" href="/dashboard">Tableau de bord</a>
+                <a id="link-login" href="/login">Se connecter</a>
+                <a id="link-register" href="/register">Créer un compte</a>
+            </div>
+        </div>
+    </nav>
+    <div class="hero">
+        <h1>🏦 BANQUE NATIONALE</h1>
+        <p>La banque moderne pour le monde numérique</p>
+        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <a id="btn-login" href="/login" class="btn btn-primary" style="background-color: white; color: var(--primary-color);">
+                Se connecter
+            </a>
+            <a id="btn-register" href="/register" class="btn btn-secondary" style="background-color: rgba(255,255,255,0.2); border: 2px solid white;">
+                Créer un compte
+            </a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">💳</div>
+                <h3>Comptes modernes</h3>
+                <p>Gérez vos finances avec nos comptes innovants et sécurisés</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">💸</div>
+                <h3>Virements rapides</h3>
+                <p>Transférez de l'argent instantanément vers n'importe quel compte</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Suivi complet</h3>
+                <p>Consultez votre historique de transactions en temps réel</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>Sécurité avancée</h3>
+                <p>Vos données sont protégées par nos systèmes de sécurité dernier cri</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <h3>Accès mobile</h3>
+                <p>Accédez à votre compte depuis n'importe quel appareil</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🌟</div>
+                <h3>Support 24/7</h3>
+                <p>Notre équipe est toujours disponible pour vous aider</p>
+            </div>
+        </div>
+    </div>
+    
+    <footer style="background: var(--light-bg); padding: 20px; text-align: center; margin-top: 40px; border-top: 1px solid var(--border-color);">
+        <p>&copy; 2026 BANQUE NATIONALE. Tous droits réservés.</p>
+    </footer>
+    <script>
+        (function() {
+            if (window.location.protocol === 'file:') {
+                document.getElementById('link-home').href = 'index.html';
+                document.getElementById('link-dashboard').href = 'dashboard.html';
+                document.getElementById('link-login').href = 'login.html';
+                document.getElementById('link-register').href = 'register.html';
+                document.getElementById('btn-login').href = 'login.html';
+                document.getElementById('btn-register').href = 'register.html';
+            }
+        })();
+    </script>
+</body>
+</html>
